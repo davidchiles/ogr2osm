@@ -1,7 +1,3 @@
-from osgeo import ogr
-import re
-import urllib
-import json
 import string
 
 road_types = {
@@ -17,10 +13,19 @@ road_types = {
 	'HW':'Highway',
 	'PA':'Path',
 	'PL':'Place',
-	'TE':'Terrace',
 	'SQ':'Square',
 	'CI':'Circle',
-	'WK':'Walk'
+	'WK':'Walk',
+	'PT':'Point',
+	'PW':'Parkway',
+	'CTR':'Center',
+	'LP':'Loop',
+	'CM':'Common',
+	'TR':'Terrace',
+	'TE':'Terrace',
+	'CV':'Cove',
+	'PZ':'Plaza',
+	'AL':'Alley'
 }
 
 directions = {
@@ -31,7 +36,10 @@ directions = {
 	'NE': 'Northeast',
 	'NW': 'Northwest',
 	'SE': 'Southeast',
-	'SW': 'Southwest'}
+	'SW': 'Southwest',
+	'WB': 'Westbound',
+	'EB': 'Eastbound'
+	}
 
 cities =[]
 
@@ -39,20 +47,16 @@ def fixCap(name):
 	return string.capwords(name)
 
 def filterTags(tags):
-	print tags['CITY']
-	if( tags['CITY'] not in cities): 
-		cities.append(tags['CITY'])
-		print tags['addr:city']
 	if tags is None:
 		return
 	newtags = {}
-	if (tags['CITY'] == 'BERKELEY'):
-		newtags['addr:city'] = fixCap(tags['CITY'])
-		#newtags['addr:country']= 'US'
-		#newtags['addr:state']='CA'
-		newtags['addr:housenumber'] = tags['ST_NUM']
-		newtags['addr:postcode'] = tags['ZIPCODE']
-		streetName = fixCap(tags['FEANME'])
+	newtags['addr:city'] = fixCap(tags['CITY'])
+	#newtags['addr:country']= 'US'
+	#newtags['addr:state']='CA'
+	newtags['addr:housenumber'] = tags['ST_NUM']
+	newtags['addr:postcode'] = tags['ZIPCODE']
+	streetName = fixCap(tags['FEANME'])
+	try:
 		if(tags['FEATYP'] is not ''):
 			streetName = streetName+" "+road_types[tags['FEATYP']]
 		if(tags['DIRPRE'] is not ''):
@@ -62,4 +66,9 @@ def filterTags(tags):
 		if(tags['UNIT'] is not ''):
 			newtags['addr:unit'] = tags['UNIT']
 		newtags['addr:street']=streetName
+	except:
+		print streetName +' '+ tags['FEATYP'] + ' ' + tags['CITY']
+		print tags
+	if(not tags['CITY']):
+		print tags
 	return newtags
